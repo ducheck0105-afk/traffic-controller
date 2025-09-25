@@ -308,53 +308,7 @@ namespace FortuneWheel
             confetiEffect.GetComponent<ParticleSystemRenderer>().material.mainTexture = PiecesOfWheel[rewardIndex].confetiIcon;
             confetiEffect.Play();
             popupPanel.gameObject.SetActive(false);
-
-            switch (PiecesOfWheel[rewardIndex].rewardCategory)
-            {
-                case RewardEnum.Gold:
-                {
-                    PlayerData.currentGold += PiecesOfWheel[rewardIndex].rewardAmount;
-                }
-                    break;
-                case RewardEnum.Energy:
-                    {
-                        totalEnergy += PiecesOfWheel[rewardIndex].rewardAmount * rewardMultiplier;
-                    }
-                    break;
-                case RewardEnum.Life:
-                    {
-                        totalLife += PiecesOfWheel[rewardIndex].rewardAmount * rewardMultiplier;
-                    }
-                    break;
-                case RewardEnum.Gem1:
-                    {
-                        totalGem1 += PiecesOfWheel[rewardIndex].rewardAmount * rewardMultiplier;
-                    }
-                    break;
-                case RewardEnum.Gem2:
-                    {
-                        totalGem2 += PiecesOfWheel[rewardIndex].rewardAmount * rewardMultiplier;
-                    }
-                    break;
-                case RewardEnum.Gem3:
-                    {
-                        totalGem3 += PiecesOfWheel[rewardIndex].rewardAmount * rewardMultiplier;
-                    }
-                    break;
-                case RewardEnum.Gem4:
-                    {
-                        totalGem4 += PiecesOfWheel[rewardIndex].rewardAmount * rewardMultiplier;
-                    }
-                    break;
-                case RewardEnum.Money:
-                    {
-                        totalMoney += PiecesOfWheel[rewardIndex].rewardAmount * rewardMultiplier;
-                    }
-                    break;
-                default:
-                    Debug.Log("There is no reward for this angle, please check angles");
-                    break;
-            }
+            PlayerData.currentGold += PiecesOfWheel[rewardIndex].rewardAmount;
             PlayerData.ConfirmToday();
             MenuController.ins.spinObj.SetActive(false);
         }

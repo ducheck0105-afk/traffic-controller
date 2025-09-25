@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 494d73bdf0ac4e76ab293b0f72abc086, type: 3}
+  m_Name: CarData
+  m_EditorClassIdentifier: 
+  mainCars:
+  - {fileID: 5119496244405047172, guid: 1a0dbf1739cb66d4eadb8100ee675912, type: 3}
+  - {fileID: 1757552654340355858, guid: 098e7a44dbd36ab41be07c1eb1594fa4, type: 3}
+  - {fileID: 4107874938522423494, guid: 03c85f4e20bd4e34ebb1f5201ff2088c, type: 3}
+  - {fileID: 2354748762424105554, guid: 9dd8d7c0ce2609c4b9e771a2ae9acf52, type: 3}
+  subCars:
+  - {fileID: -5831613034858372610, guid: 84ce6066c258c8a469829d65a93c7edb, type: 3}
+  - {fileID: 6611510630920431137, guid: 59f8a8ec3ca47d144b1acb3f06fc0f93, type: 3}
+  - {fileID: -6780353267766652789, guid: 9e789b0a3401fcd40b03d3c19ff1d31f, type: 3}
+  carExplode: {fileID: 181794, guid: da7cb0198b97a824ba78d7c046985b99, type: 3}
+  scoreParticle: {fileID: 1719794443963718, guid: 2cce7623210b0d446b269e08d495da6e, type: 3}

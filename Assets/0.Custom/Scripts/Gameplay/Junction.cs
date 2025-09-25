@@ -55,6 +55,7 @@ public class Junction : MonoBehaviour {
 			yelloLight.color = Color.gray;
 			greenLight.color = Color.gray;
 		}
-
 	}
+
+	public bool IsRed => !waiting && !free;
 }

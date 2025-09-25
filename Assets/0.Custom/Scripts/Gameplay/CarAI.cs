@@ -3,179 +3,243 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using _0.Custom.Scripts;
+using _0.Custom.Scripts.Gameplay;
+using Random = UnityEngine.Random;
 
 public class CarAI : MonoBehaviour
 {
-    public Transform waypointsHolder; //parent of all waypoints
-    public int startWaypointIndex = 0; //waypoint's index in array which will be car's first destination
-    public bool freezeYAxis = true; //used to decide move car on Y axis or not when following the path
-    [HideInInspector] public bool isMain;
-    private float acceleration = 2f;
-    private float deceleration = 5f;
-    private float maxMoveSpeed = 7f;
-    private float rotationSpeed = 2.5f;
-
-    public float distanceBeforeDeceleration = 8f; //distance between car and obstacle when car must start's deceleration
-
-    public LayerMask decelerationLayer; //car checks on these layers if there is something in front of it
-    public Transform[] wheels;
-    public bool loop = true; //used to decide loop infinitely on path or not
-    public float radius = 0.5f;
-
-    private Transform myTransform;
-    public List<Transform> waypoints = new List<Transform>();
-    private int waypointIndex = 0;
-    private int lastWaypointID = 0;
-    private float currentSpeed = 0.0f;
-    private bool accelerating = true;
-    private bool stopped = false;
-    private bool onJunction = false;
-    private Junction currentJunction;
-
-    void Start()
+    public enum CarFlow
     {
-        //if waypointsHolder variable is null give warning
-        if (!waypointsHolder)
-        {
-            Debug.LogWarning("'WaypointsHolder' isn't set'");
-            enabled = false;
-            return;
-        }
-
-        //cache transform component, good for performance
-        myTransform = GetComponent<Transform>();
-
-        //fill waypoints array
-        foreach (Transform child in waypointsHolder)
-            waypoints.Add(child);
-
-        //set first waypoint index
-        if (startWaypointIndex < waypoints.Count)
-            waypointIndex = startWaypointIndex;
+        Main,
+        Sub
     }
 
+    [Header("Luồng xe")] public CarFlow flow = CarFlow.Main;
+
+    [Header("Đường đi")] public List<Transform> waypoints;
+
+    [Tooltip("Khoảng cách coi như đã tới point để chuyển sang point kế tiếp")]
+    public float arriveDistance = 0.5f;
+
+    [Tooltip("Có lặp lại đường đi không")] public bool loopPath = true;
+
+    [Header("Di chuyển")] private float maxMoveSpeed = 7f; // m/s
+    public float acceleration = 10f; // m/s^2
+    public float deceleration = 12f; // m/s^2
+    public float rotationSpeed = 6f; // tốc độ xoay hướng (lerp)
+
+    [Header("Nhìn phía trước (chỉ áp dụng cho luồng chính)")]
+    [Tooltip("Khoảng nhìn phía trước để phát hiện xe luồng chính đứng chắn")]
+    public float lookAheadDistance = 4f;
+
+    [Tooltip("Bán kính phát hiện để forgiving hơn Ray")]
+    public float lookAheadRadius = 0.5f;
+
+    public LayerMask carLayer; // Layer của xe
+
+
+    private Rigidbody rb;
+    private int wpIndex = 0;
+    private float currentSpeed = 0f;
+
+    private bool stop;
+    private bool claimReward;
+    private readonly HashSet<Junction> zones = new HashSet<Junction>();
+
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        if (waypoints == null || waypoints.Count == 0)
+            Debug.LogWarning($"{name}: Chưa gán waypoints!");
+    }
 
     void FixedUpdate()
     {
-        if (onJunction)
-            return;
+        if (waypoints == null || waypoints.Count == 0) return;
 
-        RaycastHit hit;
-        if (Physics.SphereCast(myTransform.position, radius, myTransform.forward, out hit, distanceBeforeDeceleration,
-                decelerationLayer))
+        Transform target = waypoints[wpIndex];
+        Vector3 toTarget = (target.position - rb.position);
+        Vector3 dir = toTarget.normalized;
+
+        // Xoay mượt về hướng di chuyển
+        if (dir.sqrMagnitude > 0.0001f)
         {
-            if (hit.collider.gameObject.tag == "Car" && hit.collider.gameObject.GetComponent<CarAI>().isMain == isMain && isMain)
-                accelerating = false;
+            Quaternion desired = Quaternion.LookRotation(new Vector3(dir.x, 0f, dir.z));
+            rb.MoveRotation(Quaternion.Slerp(rb.rotation, desired, rotationSpeed * Time.fixedDeltaTime));
         }
 
+        // Quyết định có được đi hay phải dừng
+        bool shouldStop = ShouldStop();
+
+        // Tính tốc độ
+        if (!shouldStop)
+            currentSpeed += acceleration * Time.fixedDeltaTime;
         else
-            accelerating = true;
-    }
+            currentSpeed -= deceleration * Time.fixedDeltaTime;
 
+        currentSpeed = Mathf.Clamp(currentSpeed, 0f, maxMoveSpeed);
 
-    void Update()
-    {
-        MoveTrans();
-    }
+        // Di chuyển theo Rigidbody
+        Vector3 step = dir * currentSpeed * Time.fixedDeltaTime;
+        rb.MovePosition(rb.position + step);
 
-    private void MoveTrans()
-    {
-        if (!stopped)
+        // Đến gần point thì chuyển point
+        if (toTarget.magnitude <= arriveDistance)
         {
-            //controll the speed
-            if (accelerating)
-                currentSpeed = maxMoveSpeed;
+            NextWaypointOrFinish();
+        }
+    }
+
+    bool ShouldStop()
+    {
+        if (flow == CarFlow.Sub)
+            return false;
+
+        foreach (var z in zones)
+        {
+            if (z != null && z.IsRed) return true;
+        }
+
+        // 2) Có xe luồng chính đứng trước mặt trong tầm nhìn?
+        if (DetectMainCarAhead()) return true;
+
+        return false;
+    }
+
+    bool DetectMainCarAhead()
+    {
+        Vector3 origin = rb.position + Vector3.up * 0.25f; // nhích cao chút cho sạch va chạm mặt đất
+        Vector3 forward = transform.forward;
+
+        // SphereCast forgiving hơn Ray, giúp bắt xe hơi lệch hướng
+        if (Physics.SphereCast(origin, lookAheadRadius, forward, out RaycastHit hit, lookAheadDistance, carLayer,
+                QueryTriggerInteraction.Ignore))
+        {
+            if (hit.transform.TryGetComponent<CarAI>(out var other))
+            {
+                // Chỉ dừng khi xe trước là luồng chính và đang gần như đứng (chắn đường)
+                if (other.flow == CarFlow.Main)
+                {
+                    // Nếu xe trước đang chạy nhưng chậm, vẫn coi là cản
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    void NextWaypointOrFinish()
+    {
+        if (wpIndex < waypoints.Count - 1)
+        {
+            wpIndex++;
+        }
+        else
+        {
+            if (loopPath)
+                wpIndex = 0;
             else
-                currentSpeed = 0;
-
-            //clamp speed, it won't go more than value entered in 'maxMoveSpeed'
-            currentSpeed = Mathf.Clamp(currentSpeed, 0.0f, maxMoveSpeed);
-
-            Vector3 direction = (waypoints[waypointIndex].position - myTransform.position).normalized;
-
-            //if freezeYAxis is true, car won't follow the path on Y axis
-            if (freezeYAxis)
-                direction = new Vector3(direction.x, 0.0f, direction.z);
-
-            Quaternion newRotation = Quaternion.LookRotation(direction);
-
-            //rotate car towards waypoint
-            // myTransform.rotation = Quaternion.Slerp(myTransform.rotation, newRotation, rotationSpeed * Time.deltaTime);
-            // myTransform.Translate(0, 0, currentSpeed * Time.deltaTime);
-
-
-            myTransform.rotation = Quaternion.Slerp(myTransform.rotation, newRotation, rotationSpeed * Time.deltaTime);
-
-            myTransform.position += direction * currentSpeed * Time.deltaTime;
-
-            //rotate wheels depending on speed
-            foreach (Transform wheel in wheels)
-                wheel.Rotate(Vector3.right, currentSpeed * Time.deltaTime * 90, Space.Self);
+                enabled = false; // hết đường thì dừng script
         }
     }
 
-    void OnTriggerStay(Collider col)
+    /// <summary>
+    /// Thử cộng điểm tại một waypoint cụ thể.
+    /// Chỉ xe luồng chính (Main) mới được xét thưởng.
+    /// </summary>
+  
+    /// <summary>
+    /// Khi xe bước vào một collider có TrafficZone,
+    /// thêm zone đó vào tập 'zones' để biết hiện đang đứng trong các vùng giao thông nào.
+    /// </summary>
+    void OnTriggerEnter(Collider other)
     {
-        //if car enters in the waypoint
-        if (col.tag == "Waypoint" && Vector3.Distance(myTransform.position, waypoints[waypointIndex].position) < 1.0f)
-        {
-            if (col.GetInstanceID() == lastWaypointID)
-                return;
-
-            waypointIndex++;
-
-            //if this is last waypoint, check loop value, if it isn't true then stop the car, else continue moving
-            if (waypointIndex >= waypoints.Count)
-            {
-                if (loop)
-                    waypointIndex = 0;
-                else
-                    stopped = true;
-            }
-
-            lastWaypointID = col.GetInstanceID();
-        }
-
-        //if car is standing in junction and its state is 'free' than start moving
-        if (!accelerating && col.tag == "Junction" && currentJunction.free)
-        {
-            onJunction = false;
-            accelerating = true;
-        }
+        // TryGetComponent an toàn & nhanh hơn GetComponent + null-check.
+        if (other.TryGetComponent<Junction>(out var z))
+            zones.Add(z); // HashSet nên không lo bị thêm trùng.
     }
 
-
-    void OnTriggerEnter(Collider col)
+    /// <summary>
+    /// Khi xe rời khỏi một collider có TrafficZone,
+    /// loại zone đó khỏi tập 'zones'.
+    /// </summary>
+    void OnTriggerExit(Collider other)
     {
-        //if car enters in junction check its state and if it's not 'free' stop the car
-
-        if (col.gameObject.tag == "Car" && col.GetComponent<CarAI>().isMain != this.isMain)
-        {
-            GameController.instance.GameOver(false);
-        }
-
-        if (col.tag == "Junction")
-        {
-            currentJunction = col.GetComponent<Junction>();
-
-            if (!currentJunction)
-            {
-            }
-            else if (!currentJunction.free)
-            {
-                onJunction = true;
-                accelerating = false;
-            }
-        }
+        if (other.TryGetComponent<Junction>(out var z))
+            zones.Remove(z);
     }
 
-    //if car's deceleration is set low and it wasn't able to stop in junction trigger then keep moving
-    void OnTriggerExit(Collider col)
+    /// <summary>
+    /// Xử lý va chạm vật lý (collider không phải trigger).
+    /// Nếu hai xe khác luồng (Main vs Sub) đụng nhau → thua.
+    /// </summary>
+    void OnCollisionEnter(Collision collision)
     {
-        if (col.tag == "Junction")
+        // Kiểm tra đối tượng va chạm có phải CarAgent không.
+        if (collision.transform.TryGetComponent<CarAI>(out var other))
         {
-            onJunction = false;
-            accelerating = true;
+            GameController.instance.stopAll = true;
+            // Điều kiện đúng khi một xe là Main và xe kia là Sub (theo cả hai chiều).
+            bool oneMainOneSub =
+                (this.flow == CarFlow.Main && other.flow == CarFlow.Sub) ||
+                (this.flow == CarFlow.Sub && other.flow == CarFlow.Main);
+            // if(flow == CarFlow.Sub) return;
+            var rb = GetComponent<Rigidbody>();
+            if (rb == null) return;
+            // normal hướng từ other -> self tại điểm va chạm
+            var cp = collision.GetContact(0);
+            Vector3 n = cp.normal;
+
+            // Dùng xung va chạm do Unity tính sẵn (đã là impulse)
+            float J = collision.impulse.magnitude;
+
+            // Tạo mô-men xoắn theo cạnh “bật” xe khỏi normal
+            float toppleFactor = 0.02f; // tune theo game
+            Vector3 torque = Vector3.Cross(transform.up, n) * J * toppleFactor;
+
+            // Bỏ khoá rotation nếu lỡ khoá
+            rb.constraints &= ~(RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ);
+
+            rb.AddTorque(torque, ForceMode.Impulse);
+            // Nếu khác luồng → gọi GameOver(false).
+            if (oneMainOneSub)
+            {
+                Debug.Log("thua");
+                // stop = true;
+                // other.stop = true;
+                if (flow == CarFlow.Main)
+                {
+                   var particle =  Instantiate(CarData.Instance.carExplode);
+                   particle.transform.position = transform.position;
+                }
+                GameController.instance.GameOver(false);
+            }
         }
+       
+    }
+  
+
+    /// <summary>
+    /// Vẽ gizmos để debug tầm nhìn phía trước (SphereCast):
+    /// - Một đường thẳng từ vị trí xe tới khoảng cách lookAheadDistance.
+    /// - Một wire sphere tại điểm cuối để minh họa bán kính kiểm tra (lookAheadRadius).
+    /// Lưu ý: Gizmos chỉ hiển thị trong Scene view, không ảnh hưởng gameplay.
+    /// </summary>
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+
+        // Origin: ưu tiên dùng Rigidbody.position khi đang Play để khớp physics, 
+        // nếu không có rb thì dùng transform.position.
+        Vector3 origin = (Application.isPlaying ? rb?.position ?? transform.position : transform.position)
+                         + Vector3.up * 0.25f; // nhích lên chút để dễ nhìn
+
+        // Vẽ quả cầu tại điểm cuối phạm vi "nhìn" phía trước.
+        Gizmos.DrawWireSphere(origin + transform.forward * lookAheadDistance, lookAheadRadius);
+
+        // Vẽ đường thẳng biểu diễn hướng và tầm nhìn.
+        Gizmos.DrawLine(origin, origin + transform.forward * lookAheadDistance);
     }
 }

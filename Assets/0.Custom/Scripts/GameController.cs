@@ -14,7 +14,6 @@ namespace _0.Custom.Scripts
             Stop = 0,
             Move = 1,
         }
-        public List<CarAI> carPrefabs;
       
         public Transform carParent;
         public JunctionController juncion;
@@ -25,7 +24,7 @@ namespace _0.Custom.Scripts
         public List<GameObject> moveStatus;
 
         private MoveState state = MoveState.Stop;
-
+        public bool stopAll;
         private void Awake()
         {
             instance = this;
@@ -62,8 +61,10 @@ namespace _0.Custom.Scripts
 
         private IEnumerator GameOverIE(bool isWin)
         {
+            stopAll = true;
+            yield return new WaitForSeconds(0.6f);
             Time.timeScale = 0;
-            yield return new WaitForSecondsRealtime(1.5f);
+            yield return new WaitForSecondsRealtime(2.5f);
             uiController.ShowGameOver(isWin);
         }
     }

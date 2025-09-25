@@ -411,22 +411,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77f08f55d98866e42bb61d9424d8594b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  waypointsHolder: {fileID: 0}
-  startWaypointIndex: 5
-  freezeYAxis: 1
-  isMain: 0
-  distanceBeforeDeceleration: 14
-  decelerationLayer:
-    serializedVersion: 2
-    m_Bits: 64
-  wheels:
-  - {fileID: 1284723964219607149}
-  - {fileID: 7150198946847678913}
-  - {fileID: 6588529001162385275}
-  - {fileID: 2941526152075365055}
-  loop: 1
-  radius: 0
+  flow: 0
   waypoints: []
+  arriveDistance: 0.5
+  loopPath: 1
+  acceleration: 10
+  deceleration: 12
+  rotationSpeed: 6
+  lookAheadDistance: 4
+  lookAheadRadius: 0.5
+  carLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!1 &7814244717521983596
 GameObject:
   m_ObjectHideFlags: 0

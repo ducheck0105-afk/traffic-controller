@@ -1,4 +1,5 @@
 using System;
+using _0.Custom.Scripts.Menu;
 using FortuneWheel;
 using TMPro;
 using UnityEngine;
@@ -15,6 +16,7 @@ namespace _0.Custom.Scripts
         public DailySpin dailySpin;
         public GameObject spinObj;
         public SettingPanel settingPanel;
+        public BuyCarUI BuyCarUI;
 
         private void Awake()
         {
@@ -50,6 +52,12 @@ namespace _0.Custom.Scripts
         {
             AudioManager.ins.PlayButtonClick();
             settingPanel.gameObject.SetActive(true);
+        }
+
+        public void ShowShop()
+        {
+            AudioManager.ins.PlayButtonClick();
+            BuyCarUI.gameObject.SetActive(true);
         }
     }
 }

@@ -3193,7 +3193,7 @@ MonoBehaviour:
   drawColor: {r: 1, g: 0.7737833, b: 0, a: 1}
   spawnTimeMin: 5
   spawnTimeMax: 8
-  isMain: 0
+  flow: 1
   maxCar: 4
   cars: []
   ignore: 0
@@ -17120,7 +17120,7 @@ MonoBehaviour:
   drawColor: {r: 1, g: 0.16710056, b: 0, a: 1}
   spawnTimeMin: 5
   spawnTimeMax: 10
-  isMain: 1
+  flow: 0
   maxCar: 4
   cars: []
   ignore: 0
@@ -23538,7 +23538,7 @@ MonoBehaviour:
   drawColor: {r: 1, g: 0.7737833, b: 0, a: 1}
   spawnTimeMin: 5
   spawnTimeMax: 8
-  isMain: 0
+  flow: 1
   maxCar: 4
   cars: []
   ignore: 0

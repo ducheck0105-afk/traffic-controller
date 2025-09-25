@@ -65,6 +65,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -150,21 +153,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77f08f55d98866e42bb61d9424d8594b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  waypointsHolder: {fileID: 0}
-  startWaypointIndex: 1
-  freezeYAxis: 1
-  isMain: 0
-  decelerationLayer:
-    serializedVersion: 2
-    m_Bits: 64
-  wheels:
-  - {fileID: 6991341449582795888}
-  - {fileID: 1932587283400883191}
-  - {fileID: 4708594783231902125}
-  - {fileID: 2270074262807665788}
-  loop: 1
-  radius: 0
+  flow: 0
   waypoints: []
+  arriveDistance: 0.5
+  loopPath: 1
+  acceleration: 10
+  deceleration: 12
+  rotationSpeed: 6
+  lookAheadDistance: 4
+  lookAheadRadius: 0.5
+  carLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!1 &1152533260745930584
 GameObject:
   m_ObjectHideFlags: 0
@@ -223,6 +223,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -306,6 +309,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -389,6 +395,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -472,6 +481,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:

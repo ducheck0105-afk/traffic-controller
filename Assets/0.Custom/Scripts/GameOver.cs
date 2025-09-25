@@ -11,6 +11,7 @@ namespace _0.Custom.Scripts
     {
         public Transform content;
         public TextMeshProUGUI title;
+        public Text reward;
         public Button buttonNext;
 
         public void SetUp(bool isWin)
@@ -18,6 +19,8 @@ namespace _0.Custom.Scripts
             string t = isWin ? "MISSION COMPLETE" : "MISSION FAILED";
             title.text = t;
             buttonNext.interactable = isWin;
+            var rw = isWin ? PlayerData.currentLevel * 100 : 0;
+            reward.text = $"{rw}";
         }
 
         private void OnEnable()

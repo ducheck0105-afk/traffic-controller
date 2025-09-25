@@ -11,11 +11,7 @@ namespace _0.Custom.Scripts
             {
                 var car = other.GetComponent<CarAI>();
                 var parent = transform.parent.GetComponent<WaypointsHolder>();
-                if (car.isMain && parent.isMain)
-                {
-                    parent.SpawnCar();
-                }
-                parent.cars.Remove(car);
+                parent.RemoveCar(car);
 
                 Destroy(other.gameObject);
             }

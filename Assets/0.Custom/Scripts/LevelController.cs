@@ -14,6 +14,7 @@ namespace _0.Custom.Scripts
         public ScoreObject scorePrefab;
         public Transform scoreParent;
         [HideInInspector] public List<ScoreObject> scoreObjects;
+        public int reward;
 
         private void Start()
         {
@@ -26,12 +27,14 @@ namespace _0.Custom.Scripts
 
         public void AddScore()
         {
+            if (GameController.instance.stopAll) return;
             currentScore++;
             for (int i = 0; i < scoreObjects.Count; i++)
             {
                 var obj = scoreObjects[i];
                 obj.Complete(currentScore > i);
             }
+
             if (currentScore >= targetCount)
             {
                 GameController.instance.GameOver(true);
