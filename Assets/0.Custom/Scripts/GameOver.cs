@@ -19,7 +19,7 @@ namespace _0.Custom.Scripts
             string t = isWin ? "MISSION COMPLETE" : "MISSION FAILED";
             title.text = t;
             buttonNext.interactable = isWin;
-            var rw = isWin ? PlayerData.currentLevel * 100 : 0;
+            var rw = isWin ? (PlayerData.currentLevel + 1) * 100 : 0;
             reward.text = $"{rw}";
         }
 
