@@ -14,20 +14,22 @@ namespace _0.Custom.Scripts
             Stop = 0,
             Move = 1,
         }
-      
+
+        public float booster = 1;
         public Transform carParent;
         public JunctionController juncion;
         public LevelController levelController;
-        public CarSpawner carSpawner;
         public UIController uiController;
         public Material lightFloor;
         public List<GameObject> moveStatus;
 
         private MoveState state = MoveState.Stop;
         public bool stopAll;
+
         private void Awake()
         {
             instance = this;
+            booster = 1;
         }
 
         private void Start()
@@ -66,6 +68,38 @@ namespace _0.Custom.Scripts
             Time.timeScale = 0;
             yield return new WaitForSecondsRealtime(2.5f);
             uiController.ShowGameOver(isWin);
+        }
+
+        public void Boost()
+        {
+            AudioManager.ins.PlayButtonClick();
+            if(isBoost) return;
+            if (PlayerData.currentGold >= 200)
+            {
+                PlayerData.currentGold -= 200;
+                StartCoroutine(BoostIE());
+            }
+        }
+
+        private bool isBoost;
+
+        private IEnumerator BoostIE()
+        {
+            isBoost = true;
+            booster = 1.6f;
+            yield return new WaitForSeconds(10f);
+            booster = 1;
+            isBoost = false;
+        }
+
+        public void RemoveCar()
+        {
+            AudioManager.ins.PlayButtonClick();
+            if (PlayerData.currentGold >= 400)
+            {
+                PlayerData.currentGold -= 400;
+                WaypointsHolder.clearCar?.Invoke();
+            }
         }
     }
 }

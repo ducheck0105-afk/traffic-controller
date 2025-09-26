@@ -29,6 +29,9 @@ namespace _0.Custom.Scripts
             
             _sfxSrc = gameObject.AddComponent<AudioSource>();
             _sfxSrc.loop = false;
+            
+            SetSfxVolume(PlayerData.SfxVolume);
+            SetMusicVolume(PlayerData.MusicVolume);
         }
 
         private void Start()

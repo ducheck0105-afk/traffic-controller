@@ -33,7 +33,7 @@ namespace _0.Custom.Scripts
 
         private void OnDestroy()
         {
-            PlayerData.onChangeCoin += UpdateTxtCoin;
+            PlayerData.onChangeCoin -= UpdateTxtCoin;
         }
 
         private void UpdateTxtCoin()

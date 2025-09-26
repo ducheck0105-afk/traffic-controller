@@ -12,7 +12,6 @@ namespace _0.Custom.Scripts
                 var car = other.GetComponent<CarAI>();
                 var parent = transform.parent.GetComponent<WaypointsHolder>();
                 parent.RemoveCar(car);
-
                 Destroy(other.gameObject);
             }
         }

@@ -14,17 +14,35 @@ public class WaypointsHolder : MonoBehaviour
     public float spawnTimeMin = 5;
     public float spawnTimeMax = 10f;
     public CarAI.CarFlow flow;
-    public int maxCar;
     public List<CarAI> cars = new List<CarAI>();
 
     private float spawnTimer;
     public bool ignore;
     private Coroutine IE;
-
+    public static Action clearCar;
+    private void ClearCar()
+    {
+        if(flow == CarAI.CarFlow.Main) return;
+        foreach (var obj in cars)
+        {
+            if (obj != null)
+            {
+                Destroy(obj.gameObject);
+            }
+        }
+        cars.Clear();
+    }
     private void Start()
     {
         if (ignore) return;
         IE = StartCoroutine(SpawnCarIE());
+        
+        clearCar += ClearCar;
+    }
+
+    private void OnDestroy()
+    {
+        clearCar -= ClearCar;
     }
 
     public void RemoveCar(CarAI obj)
@@ -55,9 +73,6 @@ public class WaypointsHolder : MonoBehaviour
 
     private IEnumerator SpawnCarIE()
     {
-        Debug.Log("SpawnOneMore");
-        if (cars.Count >= maxCar) yield break;
-
         while (spawnTimer > 0)
         {
             spawnTimer -= Time.deltaTime;
@@ -71,7 +86,6 @@ public class WaypointsHolder : MonoBehaviour
 
     private IEnumerator SpawnOneMore()
     {
-        Debug.Log("SpawnOneMore");
         float time = 2;
         while (time > 0)
         {

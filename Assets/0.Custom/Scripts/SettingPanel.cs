@@ -20,11 +20,14 @@ namespace _0.Custom.Scripts
         public void ChangeSfx(float value)
         {
             PlayerData.SfxVolume = value;
+
+            AudioManager.ins.SetSfxVolume(value);
         }
 
         public void ChangeMusic(float value)
         {
             PlayerData.MusicVolume = value;
+            AudioManager.ins.SetMusicVolume(value);
         }
 
         private void OnEnable()

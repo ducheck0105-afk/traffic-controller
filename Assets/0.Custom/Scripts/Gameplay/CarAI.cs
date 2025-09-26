@@ -79,7 +79,7 @@ public class CarAI : MonoBehaviour
             currentSpeed -= deceleration * Time.fixedDeltaTime;
 
         currentSpeed = Mathf.Clamp(currentSpeed, 0f, maxMoveSpeed);
-
+        currentSpeed *= flow == CarFlow.Main ? GameController.instance.booster : 1;
         // Di chuyển theo Rigidbody
         Vector3 step = dir * currentSpeed * Time.fixedDeltaTime;
         rb.MovePosition(rb.position + step);

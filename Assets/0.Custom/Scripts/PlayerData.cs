@@ -38,7 +38,7 @@ namespace _0.Custom.Scripts
         }
         public static int currentGold
         {
-            get => PlayerPrefs.GetInt("currentGold", 0);
+            get => PlayerPrefs.GetInt("currentGold", 1000);
             set
             {
                 
