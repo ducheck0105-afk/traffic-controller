@@ -73,12 +73,13 @@ namespace _0.Custom.Scripts
         public void Boost()
         {
             AudioManager.ins.PlayButtonClick();
-            if(isBoost) return;
+            if (isBoost) return;
             if (PlayerData.currentGold >= 200)
             {
                 PlayerData.currentGold -= 200;
                 StartCoroutine(BoostIE());
             }
+            else ToastNotifier.Instance.ShowNotEnoughMoney();
         }
 
         private bool isBoost;
@@ -99,6 +100,10 @@ namespace _0.Custom.Scripts
             {
                 PlayerData.currentGold -= 400;
                 WaypointsHolder.clearCar?.Invoke();
+            }
+            else
+            {
+                ToastNotifier.Instance.ShowNotEnoughMoney();
             }
         }
     }

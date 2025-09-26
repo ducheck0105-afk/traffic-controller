@@ -23,6 +23,9 @@ namespace _0.Custom.Scripts.Menu
             {
                 a.button.onClick.AddListener(() => Select(a));
             }
+
+            currentCarUI = carUI[PlayerData.PlayerCar];
+            SetEquip();
         }
 
         private void OnEnable()
@@ -38,7 +41,7 @@ namespace _0.Custom.Scripts.Menu
             var unlock = PlayerData.ListCar.Contains(index);
             buttonBuy.interactable = !unlock;
             buttonEquip.interactable = unlock && PlayerData.PlayerCar != index;
-
+            currentCarUI = ui;
             foreach (var a in carUI)
             {
                 var cc = ui == a ? green : gray;
@@ -49,7 +52,11 @@ namespace _0.Custom.Scripts.Menu
         public void Buy()
         {
             AudioManager.ins.PlayButtonClick();
-            if (PlayerData.currentGold < currentCarUI.price) return;
+            if (PlayerData.currentGold < currentCarUI.price)
+            {
+                ToastNotifier.Instance.ShowNotEnoughMoney();
+                return;
+            }
             PlayerData.currentGold -= currentCarUI.price;
             var litCar = PlayerData.ListCar;
             var index = carUI.IndexOf(currentCarUI);
@@ -69,6 +76,16 @@ namespace _0.Custom.Scripts.Menu
         {
             AudioManager.ins.PlayButtonClick();
             PlayerData.PlayerCar = carUI.IndexOf(currentCarUI);
+            SetEquip();
+        }
+
+        private void SetEquip()
+        {
+            foreach (var a in carUI)
+            {
+                var cc = currentCarUI == a;
+                a.Equip(cc);
+            }
         }
     }
 }
