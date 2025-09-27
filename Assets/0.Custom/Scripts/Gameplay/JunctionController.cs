@@ -1,12 +1,14 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using _0.Custom.Scripts;
 
 //Controls junction trigger's states
 
 public class JunctionController : MonoBehaviour
 {
-    public Junction[] junctions;
+    public Junction[] trafficLight;
     public float greenLightTime = 5.0f; //time in seconds green light will be activated for each traffic light
     public float yellowLightTime = 2.0f; //time in seconds for yellow light
 
@@ -14,6 +16,11 @@ public class JunctionController : MonoBehaviour
     private int junctionIndex = 0;
     private bool waiting = false;
     public bool isAuto;
+
+    private void Awake()
+    {
+        trafficLight = GetComponentsInChildren<Junction>(true);
+    }
 
     public void ChangeState(GameController.MoveState state)
     {
@@ -29,7 +36,7 @@ public class JunctionController : MonoBehaviour
 
     public void ChangeGreen()
     {
-        foreach (var a in junctions)
+        foreach (var a in trafficLight)
         {
             a.free = true;
             a.waiting = false;
@@ -38,7 +45,7 @@ public class JunctionController : MonoBehaviour
 
     public void ChangeYellow()
     {
-        foreach (var a in junctions)
+        foreach (var a in trafficLight)
         {
             a.free = false;
             a.waiting = true;
@@ -47,7 +54,7 @@ public class JunctionController : MonoBehaviour
 
     public void ChangeRed()
     {
-        foreach (var a in junctions)
+        foreach (var a in trafficLight)
         {
             a.free = false;
             a.waiting = false;
@@ -62,15 +69,15 @@ public class JunctionController : MonoBehaviour
         //time for green light is over, change states on current and next traffic lights
         if (!waiting && timer >= greenLightTime)
         {
-            junctions[junctionIndex].free = false;
-            junctions[junctionIndex].waiting = true;
+            trafficLight[junctionIndex].free = false;
+            trafficLight[junctionIndex].waiting = true;
 
-            if (junctionIndex == junctions.Length - 1)
+            if (junctionIndex == trafficLight.Length - 1)
                 junctionIndex = 0;
             else
                 junctionIndex++;
 
-            junctions[junctionIndex].waiting = true;
+            trafficLight[junctionIndex].waiting = true;
 
             waiting = true;
         }
@@ -79,12 +86,12 @@ public class JunctionController : MonoBehaviour
         if (waiting && timer >= greenLightTime + yellowLightTime)
         {
             if (junctionIndex == 0)
-                junctions[junctions.Length - 1].waiting = false;
+                trafficLight[trafficLight.Length - 1].waiting = false;
             else
-                junctions[junctionIndex - 1].waiting = false;
+                trafficLight[junctionIndex - 1].waiting = false;
 
-            junctions[junctionIndex].waiting = false;
-            junctions[junctionIndex].free = true;
+            trafficLight[junctionIndex].waiting = false;
+            trafficLight[junctionIndex].free = true;
 
             waiting = false;
             timer = 0.0f;
