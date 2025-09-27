@@ -39,6 +39,7 @@ namespace _0.Custom.Scripts
         {
             AudioManager.ins.PlayButtonClick();
             gameObject.SetActive(false);
+            Time.timeScale = 1;
         }
     }
 }

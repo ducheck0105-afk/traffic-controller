@@ -106,5 +106,7 @@ namespace _0.Custom.Scripts
                 ToastNotifier.Instance.ShowNotEnoughMoney();
             }
         }
+
+        
     }
 }

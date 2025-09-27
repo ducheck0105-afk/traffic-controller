@@ -37,10 +37,10 @@ public class CarAI : MonoBehaviour
 
     public LayerMask carLayer; // Layer của xe
 
-
+    public ParticleSystem smoke;
     private Rigidbody rb;
     private int wpIndex = 0;
-    private float currentSpeed = 0f;
+    public float currentSpeed = 0f;
 
     private bool stop;
     private bool claimReward;
@@ -53,7 +53,7 @@ public class CarAI : MonoBehaviour
         if (waypoints == null || waypoints.Count == 0)
             Debug.LogWarning($"{name}: Chưa gán waypoints!");
     }
-
+    
     void FixedUpdate()
     {
         if (waypoints == null || waypoints.Count == 0) return;
@@ -89,8 +89,37 @@ public class CarAI : MonoBehaviour
         {
             NextWaypointOrFinish();
         }
+        
+        {
+            if (smoke != null)
+            {
+                bool braking =  currentSpeed is > 0.1f and < 7;
+                // bool fast = currentSpeed > 5f && currentSpeed < 7f;
+                if (braking && smoke.isPlaying)
+                {
+                    smoke.Play();
+                }
+                //smoke.gameObject.SetActive(braking);
+            }
+            
+            // if (!isPlay && ( braking))
+            // {
+            //     Debug.Log("smoke");
+            //     isPlay = true;
+            //     smoke.gameObject.SetActive(true);
+            // }
+            // else if (!braking && isPlay)
+            // {
+            //     Debug.Log("normal");
+            //     smoke.gameObject.SetActive(false);
+            //     isPlay = false;
+            //     // anim.Play("Move");
+            // }
+        }
+        
     }
 
+    private bool isPlay = false;
     bool ShouldStop()
     {
         if (flow == CarFlow.Sub)
@@ -180,7 +209,6 @@ public class CarAI : MonoBehaviour
         // Kiểm tra đối tượng va chạm có phải CarAgent không.
         if (collision.transform.TryGetComponent<CarAI>(out var other))
         {
-            GameController.instance.stopAll = true;
             // Điều kiện đúng khi một xe là Main và xe kia là Sub (theo cả hai chiều).
             bool oneMainOneSub =
                 (this.flow == CarFlow.Main && other.flow == CarFlow.Sub) ||
@@ -206,7 +234,6 @@ public class CarAI : MonoBehaviour
             // Nếu khác luồng → gọi GameOver(false).
             if (oneMainOneSub)
             {
-                Debug.Log("thua");
                 // stop = true;
                 // other.stop = true;
                 if (flow == CarFlow.Main)

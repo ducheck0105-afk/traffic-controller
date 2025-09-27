@@ -8,7 +8,8 @@ namespace _0.Custom.Scripts
     {
         public GameOver gameOver;
         public Text txtCoin;
-
+        public Pause pause;
+        public SettingPanel settingPanel;
         private void Start()
         {
             PlayerData.onChangeCoin += UpdateTxtCoin;
@@ -28,5 +29,17 @@ namespace _0.Custom.Scripts
             gameOver.SetUp(isWin);
             gameOver.gameObject.SetActive(true);
         }
+        
+        public void ShowSetting()
+        {
+            settingPanel.gameObject.SetActive(true);
+        }
+
+        public void ShowPause()
+        {
+            Time.timeScale = 0;
+            pause.gameObject.SetActive(true);
+        }
+
     }
 }
